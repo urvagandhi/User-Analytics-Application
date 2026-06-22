@@ -1,17 +1,33 @@
 import { pushEvent, getAndClearEvents } from './buffer.js';
-import { createPageViewEvent, createClickEvent } from './events.js';
+import { createPageViewEvent, createClickEvent, createRageClickEvent, createDeadClickEvent, isDeadClickCandidate } from './events.js';
 import { flushEvents } from './flush.js';
 import { resetSession } from './session.js';
+import type { TrackerConfig } from './config.js';
+import { setConfig, activeConfig, getPageUrl } from './config.js';
 
-export interface TrackerConfig {
-  endpoint: string;
-  autoTrackPageViews?: boolean;
-  autoTrackClicks?: boolean;
-}
+export type { TrackerConfig };
+export { getPageUrl };
 
-let config: TrackerConfig | null = null;
 let isInitialized = false;
 let flushIntervalId: any = null;
+
+// Rage click rolling buffer
+interface ClickRecord {
+  element: HTMLElement;
+  timestamp: number;
+}
+let rageClickBuffer: ClickRecord[] = [];
+
+// Dead click pending queue
+interface PendingClick {
+  id: string;
+  timestamp: number;
+  clientX: number;
+  clientY: number;
+  element: HTMLElement;
+  timerId: any;
+}
+let pendingDeadClicks: PendingClick[] = [];
 
 /**
  * Flushes all currently buffered tracking events.
@@ -19,7 +35,7 @@ let flushIntervalId: any = null;
  * @param isUnloading Should be set to true if flushing during the page hide/unload event.
  */
 export async function flush(isUnloading = false): Promise<void> {
-  if (!config) {
+  if (!activeConfig) {
     return;
   }
 
@@ -28,7 +44,7 @@ export async function flush(isUnloading = false): Promise<void> {
     return;
   }
 
-  const success = await flushEvents(events, config.endpoint, isUnloading);
+  const success = await flushEvents(events, activeConfig.endpoint, isUnloading);
   if (!success && !isUnloading) {
     // Re-buffer the events so we can retry on the next interval
     // We put them back at the front of the queue
@@ -44,6 +60,10 @@ export function trackPageView(): void {
     console.warn('CausalFunnel Tracker: SDK not initialized. Call initializeTracker first.');
     return;
   }
+
+  // Clear all pending dead clicks when a page view occurs
+  pendingDeadClicks.forEach((pc) => clearTimeout(pc.timerId));
+  pendingDeadClicks = [];
 
   try {
     const event = createPageViewEvent();
@@ -72,10 +92,14 @@ export function trackClick(xOrEvent?: number | MouseEvent, y?: number): void {
   try {
     let clientX = 0;
     let clientY = 0;
+    let clickElement: HTMLElement | null = null;
 
     if (xOrEvent instanceof MouseEvent) {
       clientX = xOrEvent.clientX;
       clientY = xOrEvent.clientY;
+      if (xOrEvent.target instanceof HTMLElement) {
+        clickElement = xOrEvent.target;
+      }
     } else if (typeof xOrEvent === 'number' && typeof y === 'number') {
       clientX = xOrEvent;
       clientY = y;
@@ -92,6 +116,62 @@ export function trackClick(xOrEvent?: number | MouseEvent, y?: number): void {
       // Trigger instant flush when batch limit is reached
       flush().catch(() => {});
     });
+
+    if (clickElement) {
+      const now = Date.now();
+
+      // 1. Rage Click Detection
+      rageClickBuffer.push({ element: clickElement, timestamp: now });
+      const recentClicksOnElement = rageClickBuffer.filter(
+        (c) => c.element === clickElement && now - c.timestamp <= 800
+      );
+
+      if (recentClicksOnElement.length >= 3) {
+        try {
+          const rageEvent = createRageClickEvent(clientX, clientY, clickElement);
+          pushEvent(rageEvent, () => {
+            flush().catch(() => {});
+          });
+        } catch (err) {
+          console.error('CausalFunnel Tracker: Error tracking RageClick:', err);
+        }
+        // Avoid duplicate rage-clicks by removing current clicks for this element
+        rageClickBuffer = rageClickBuffer.filter((c) => c.element !== clickElement);
+      }
+
+      // 2. Dead Click Detection
+      if (isDeadClickCandidate(clickElement)) {
+        const pendingId = Math.random().toString();
+        const timerId = setTimeout(() => {
+          const idx = pendingDeadClicks.findIndex((pc) => pc.id === pendingId);
+          if (idx !== -1) {
+            const deadClick = pendingDeadClicks[idx];
+            pendingDeadClicks.splice(idx, 1);
+            try {
+              const deadEvent = createDeadClickEvent(deadClick.clientX, deadClick.clientY, deadClick.element);
+              pushEvent(deadEvent, () => {
+                flush().catch(() => {});
+              });
+            } catch (err) {
+              console.error('CausalFunnel Tracker: Error tracking DeadClick:', err);
+            }
+          }
+        }, 2000);
+
+        pendingDeadClicks.push({
+          id: pendingId,
+          timestamp: now,
+          clientX,
+          clientY,
+          element: clickElement,
+          timerId,
+        });
+      }
+
+      // Prune old clicks from buffer to keep memory clean
+      const limitTime = now - 800;
+      rageClickBuffer = rageClickBuffer.filter((c) => c.timestamp >= limitTime);
+    }
   } catch (error) {
     console.error('CausalFunnel Tracker: Error tracking Click:', error);
   }
@@ -116,11 +196,12 @@ export function initializeTracker(userConfig: TrackerConfig): void {
     return;
   }
 
-  config = {
+  const config = {
     autoTrackPageViews: true,
     autoTrackClicks: true,
     ...userConfig,
   };
+  setConfig(config);
 
   isInitialized = true;
 
@@ -155,3 +236,5 @@ export function initializeTracker(userConfig: TrackerConfig): void {
 // Re-export resetSession to allow explicit session resets
 export { resetSession };
 export { getSessionId } from './session.js';
+export { setPageUrlOverride } from './config.js';
+export { getQueueSize } from './buffer.js';
