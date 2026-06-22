@@ -42,6 +42,13 @@ export class SessionRepository {
   }
 
   /**
+   * Returns total count of sessions.
+   */
+  async countSessions(): Promise<number> {
+    return SessionModel.countDocuments().exec();
+  }
+
+  /**
    * Fetches a paginated list of sessions sorted by last activity time.
    */
   async getSessions(limit = 50, skip = 0): Promise<ISessionDocument[]> {

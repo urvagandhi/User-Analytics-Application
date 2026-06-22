@@ -17,6 +17,8 @@ export interface IEventDocument extends Document {
   elementSelector?: string;
   elementText?: string;
   tagName?: string;
+  scrollDepth?: number;
+  documentHeight?: number;
   createdAt: Date;
 }
 
@@ -84,6 +86,14 @@ const EventSchema = new Schema<IEventDocument>(
       type: String,
       required: false,
     },
+    scrollDepth: {
+      type: Number,
+      required: false,
+    },
+    documentHeight: {
+      type: Number,
+      required: false,
+    },
     createdAt: {
       type: Date,
       default: Date.now,
@@ -99,5 +109,6 @@ const EventSchema = new Schema<IEventDocument>(
 EventSchema.index({ sessionId: 1, timestamp: 1 });
 EventSchema.index({ pageUrl: 1, eventType: 1 });
 EventSchema.index({ eventType: 1, timestamp: -1 });
+EventSchema.index({ eventType: 1, scrollDepth: 1 });
 
 export const EventModel = model<IEventDocument>('Event', EventSchema);

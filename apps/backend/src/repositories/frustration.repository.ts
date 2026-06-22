@@ -97,6 +97,37 @@ export class FrustrationRepository {
   }
 
   /**
+   * Returns xPct/yPct coordinates of rage and dead clicks for a specific page.
+   * Only returns events that have coordinate data.
+   */
+  async getFrustrationHeatmapPoints(pageUrl: string): Promise<any[]> {
+    return EventModel.aggregate([
+      {
+        $match: {
+          pageUrl,
+          eventType: { $in: ['rage_click', 'dead_click'] },
+          xPct: { $exists: true, $ne: null },
+          yPct: { $exists: true, $ne: null },
+        },
+      },
+      {
+        $sort: { timestamp: -1 },
+      },
+      {
+        $limit: 3000,
+      },
+      {
+        $project: {
+          _id: 0,
+          xPct: 1,
+          yPct: 1,
+          type: '$eventType',
+        },
+      },
+    ]).exec();
+  }
+
+  /**
    * Returns frustration events grouped by date for timeline visualization.
    */
   async getFrustrationTimeline(): Promise<any[]> {

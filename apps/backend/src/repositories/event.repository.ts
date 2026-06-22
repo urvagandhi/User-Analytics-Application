@@ -18,9 +18,13 @@ export class EventRepository {
 
   /**
    * Retrieves all click events for a page to construct heatmaps.
+   * Limits to the 3000 most recent clicks to prevent memory overflow while preserving visual density.
    */
   async findClicksByPage(pageUrl: string): Promise<IEventDocument[]> {
-    return EventModel.find({ pageUrl, eventType: 'click' }).exec();
+    return EventModel.find({ pageUrl, eventType: 'click' })
+      .sort({ timestamp: -1 })
+      .limit(3000)
+      .exec();
   }
 }
 export const eventRepository = new EventRepository();
