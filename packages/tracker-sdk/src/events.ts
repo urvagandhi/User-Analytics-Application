@@ -67,7 +67,7 @@ export function createPageViewEvent(): PageViewEvent {
   return {
     type: EventType.PAGE_VIEW,
     sessionId: getSessionId(),
-    timestamp: Date.now(),
+    timestamp: new Date().toISOString(),
     pageUrl: getPageUrl(),
     userAgent: navigator.userAgent,
   };
@@ -91,7 +91,7 @@ export function createClickEvent(clientX: number, clientY: number): ClickEvent {
   return {
     type: EventType.CLICK,
     sessionId: getSessionId(),
-    timestamp: Date.now(),
+    timestamp: new Date().toISOString(),
     pageUrl: getPageUrl(),
     userAgent: navigator.userAgent,
     x: clientX,
@@ -120,7 +120,7 @@ export function createRageClickEvent(clientX: number, clientY: number, el: HTMLE
   return {
     type: EventType.RAGE_CLICK,
     sessionId: getSessionId(),
-    timestamp: Date.now(),
+    timestamp: new Date().toISOString(),
     pageUrl: getPageUrl(),
     userAgent: navigator.userAgent,
     x: clientX,
@@ -146,7 +146,7 @@ export function createDeadClickEvent(clientX: number, clientY: number, el: HTMLE
   return {
     type: EventType.DEAD_CLICK,
     sessionId: getSessionId(),
-    timestamp: Date.now(),
+    timestamp: new Date().toISOString(),
     pageUrl: getPageUrl(),
     userAgent: navigator.userAgent,
     x: clientX,

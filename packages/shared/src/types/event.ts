@@ -13,7 +13,7 @@ export enum EventType {
  */
 export const BaseEventSchema = z.object({
   sessionId: z.string().min(1, 'Session ID is required'),
-  timestamp: z.number().int().nonnegative('Timestamp must be a positive integer'),
+  timestamp: z.string().datetime().nonnegative('Timestamp must be a positive integer'),
   pageUrl: z.string().min(1, 'Page URL is required'),
   userAgent: z.string().min(1, 'User Agent is required'),
 });
