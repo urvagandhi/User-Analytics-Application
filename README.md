@@ -17,12 +17,11 @@ A production-grade, miniature behavioral analytics platform capable of capturing
 - **Live Event Telemetry:** Server-Sent Events (SSE) streaming real-time interactions to the dashboard with zero polling.
 
 <div align="center">
-  <!-- Placeholder: Hero Dashboard Screenshot -->
-  <i>[Placeholder: Dashboard Overview Screenshot]</i>
+  <img src="docs/session.png" alt="CausalFunnel Analytics Dashboard" width="800"/>
 </div>
 
 ### Hosted Links
-* **Dashboard URL:** [https://user-analytics-casualfunnel.vercel.app](https://user-analytics-casualfunnel.vercel.app)
+* **Dashboard URL:** [https://user-analytics-causalfunnel.vercel.app](https://user-analytics-causalfunnel.vercel.app)
 * **Backend API URL:** [https://user-analytics-application-pna6.onrender.com](https://user-analytics-application-pna6.onrender.com)
 * **Demo Store URL:** [https://user-analytics-application-pna6.onrender.com/demo](https://user-analytics-application-pna6.onrender.com/demo)
 * **Repository URL:** [https://github.com/urvagandhi/User-Analytics-Application](https://github.com/urvagandhi/User-Analytics-Application)
@@ -273,7 +272,7 @@ Services:
 
 ## Hosted Demo
 
-- **Dashboard**: [https://user-analytics-casualfunnel.vercel.app](https://user-analytics-casualfunnel.vercel.app)
+- **Dashboard**: [https://user-analytics-causalfunnel.vercel.app](https://user-analytics-causalfunnel.vercel.app)
 - **Backend API**: [https://user-analytics-application-pna6.onrender.com](https://user-analytics-application-pna6.onrender.com)
 - **Demo Store**: [https://user-analytics-application-pna6.onrender.com/demo](https://user-analytics-application-pna6.onrender.com/demo)
 
@@ -434,14 +433,13 @@ sequenceDiagram
 *(Displays specific DOM elements causing Rage & Dead Clicks)*
 ![Frustration Intelligence](docs/frustration.png)
 
-### 3. Session Timeline
-`[Placeholder: Session Timeline Screenshot]`
+### 3. Session Explorer & Timeline
+*(Displays a complete chronological user journey)*
+![Session Timeline](docs/session.png)
 
-### 4. Funnels Analysis
-`[Placeholder: Funnels Screenshot]`
-
-### 5. Live Event Feed
-`[Placeholder: Live Feed Screenshot]`
+### 4. Live Event Feed
+*(Monitors real-time incoming events via SSE)*
+![Live Feed](docs/live.png)
 
 </details>
 
