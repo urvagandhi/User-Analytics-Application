@@ -1,4 +1,5 @@
 import { frustrationRepository, FrustrationRepository } from '../repositories/frustration.repository.js';
+import { sessionRepository, SessionRepository } from '../repositories/session.repository.js';
 
 export interface FrustrationSummary {
   totalRageClicks: number;
@@ -11,7 +12,8 @@ export interface FrustrationSummary {
 
 export class FrustrationService {
   constructor(
-    private readonly frustrationRepo: FrustrationRepository = frustrationRepository
+    private readonly frustrationRepo: FrustrationRepository = frustrationRepository,
+    private readonly sessionRepo: SessionRepository = sessionRepository
   ) {}
 
   /**
@@ -25,15 +27,17 @@ export class FrustrationService {
     const pageStats = await this.frustrationRepo.getPageFrustrationStats();
 
     const affectedPages = pageStats.length;
+    const totalSessions = Math.max(1, await this.sessionRepo.countSessions());
 
-    // Compute frustration score: (rageClicks * 2) + deadClicks
-    const score = (totalRageClicks * 2) + totalDeadClicks;
+    // Compute frustration score normalized by total sessions (Frustration Events per 100 Sessions)
+    const rawEvents = (totalRageClicks * 2) + totalDeadClicks;
+    const score = Math.round((rawEvents / totalSessions) * 100);
 
-    // Normalize: 0-20 -> Low, 20-50 -> Medium, 50+ -> High
+    // Normalize severity based on events per 100 sessions
     let severity: 'Low' | 'Medium' | 'High' = 'Low';
-    if (score >= 50) {
+    if (score >= 50) { // e.g., >= 0.5 events per session on average
       severity = 'High';
-    } else if (score >= 20) {
+    } else if (score >= 10) { // e.g., >= 0.1 events per session
       severity = 'Medium';
     }
 
@@ -59,6 +63,13 @@ export class FrustrationService {
    */
   async getPages(): Promise<any[]> {
     return this.frustrationRepo.getPageFrustrationStats();
+  }
+
+  /**
+   * Returns xPct/yPct coordinates of frustration clicks for a specific page.
+   */
+  async getHeatmapPoints(pageUrl: string): Promise<any[]> {
+    return this.frustrationRepo.getFrustrationHeatmapPoints(pageUrl);
   }
 
   /**

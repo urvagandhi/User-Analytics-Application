@@ -1,0 +1,287 @@
+<style>
+.bp-section { margin: 0 0 2rem; }
+.bp-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .08em; color: var(--color-text-tertiary); margin: 0 0 .5rem; }
+.bp-card { background: var(--color-background-secondary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: .75rem; }
+.bp-card-white { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: .75rem; }
+.bp-row { display: flex; gap: 12px; flex-wrap: wrap; }
+.bp-col { flex: 1; min-width: 180px; }
+.bp-mono { font-family: var(--font-mono); font-size: 12px; color: var(--color-text-secondary); line-height: 1.8; }
+.bp-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); margin: 0 0 4px; }
+.bp-sub { font-size: 12px; color: var(--color-text-secondary); margin: 0; line-height: 1.6; }
+.tag { display: inline-block; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 4px; margin: 2px 2px 0 0; }
+.tag-p { background: #EEEDFE; color: #3C3489; }
+.tag-t { background: #E1F5EE; color: #085041; }
+.tag-a { background: #FAEEDA; color: #633806; }
+.tag-r { background: #FCEBEB; color: #791F1F; }
+.tag-g { background: #EAF3DE; color: #27500A; }
+.tag-b { background: #E6F1FB; color: #0C447C; }
+.divider { border: none; border-top: 0.5px solid var(--color-border-tertiary); margin: 1.5rem 0; }
+.decision-row { display: flex; align-items: flex-start; gap: 12px; padding: 8px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.decision-row:last-child { border-bottom: none; }
+.decision-q { font-size: 12px; font-weight: 500; color: var(--color-text-primary); min-width: 160px; flex: 0 0 160px; }
+.decision-a { font-size: 12px; color: var(--color-text-secondary); flex: 1; }
+.decision-why { font-size: 11px; color: var(--color-text-tertiary); margin-top: 2px; }
+.flow-step { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
+.flow-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.flow-arrow { color: var(--color-text-tertiary); font-size: 12px; padding: 0 4px; }
+</style>
+
+<h2 class="sr-only">CausalFunnel assignment — final engineering blueprint</h2>
+
+<div class="bp-section">
+  <div class="bp-label">Monorepo structure</div>
+  <div class="bp-row">
+    <div class="bp-col bp-card">
+      <div class="bp-title" style="margin-bottom:8px">packages/tracker-sdk</div>
+      <div class="bp-mono">src/<br>
+&nbsp;&nbsp;session.ts<br>
+&nbsp;&nbsp;buffer.ts<br>
+&nbsp;&nbsp;events.ts<br>
+&nbsp;&nbsp;flush.ts<br>
+&nbsp;&nbsp;index.ts<br>
+dist/<br>
+&nbsp;&nbsp;tracker.min.js</div>
+    </div>
+    <div class="bp-col bp-card">
+      <div class="bp-title" style="margin-bottom:8px">apps/backend</div>
+      <div class="bp-mono">src/<br>
+&nbsp;&nbsp;app.ts<br>
+&nbsp;&nbsp;server.ts<br>
+&nbsp;&nbsp;config/<br>
+&nbsp;&nbsp;routes/<br>
+&nbsp;&nbsp;controllers/<br>
+&nbsp;&nbsp;services/<br>
+&nbsp;&nbsp;repositories/<br>
+&nbsp;&nbsp;models/<br>
+&nbsp;&nbsp;validators/<br>
+&nbsp;&nbsp;middleware/<br>
+&nbsp;&nbsp;types/<br>
+&nbsp;&nbsp;utils/<br>
+&nbsp;&nbsp;constants/</div>
+    </div>
+    <div class="bp-col bp-card">
+      <div class="bp-title" style="margin-bottom:8px">apps/frontend</div>
+      <div class="bp-mono">src/<br>
+&nbsp;&nbsp;app/ (Next.js)<br>
+&nbsp;&nbsp;components/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ui/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;session/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;heatmap/<br>
+&nbsp;&nbsp;hooks/<br>
+&nbsp;&nbsp;services/<br>
+&nbsp;&nbsp;store/<br>
+&nbsp;&nbsp;types/<br>
+&nbsp;&nbsp;lib/<br>
+&nbsp;&nbsp;constants/<br>
+&nbsp;&nbsp;providers/</div>
+    </div>
+    <div class="bp-col bp-card">
+      <div class="bp-title" style="margin-bottom:8px">packages/shared</div>
+      <div class="bp-mono">types/<br>
+&nbsp;&nbsp;event.ts<br>
+&nbsp;&nbsp;session.ts<br>
+&nbsp;&nbsp;api.ts<br>
+&nbsp;&nbsp;heatmap.ts<br><br>
+Root:<br>
+&nbsp;&nbsp;docker-compose.yml<br>
+&nbsp;&nbsp;.github/workflows/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ci.yml<br>
+&nbsp;&nbsp;.env.example<br>
+&nbsp;&nbsp;README.md</div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<div class="bp-section">
+  <div class="bp-label">Event pipeline — what happens on every click</div>
+  <div class="bp-card-white">
+    <div class="flow-step"><span class="flow-dot" style="background:#1D9E75"></span><span style="font-size:13px;font-weight:500;color:var(--color-text-primary)">User clicks</span><span class="flow-arrow">→</span><span style="font-size:12px;color:var(--color-text-secondary)">tracker.js captures: type, pageUrl, x, y, viewportW, viewportH, timestamp</span></div>
+    <div class="flow-step"><span class="flow-dot" style="background:#1D9E75"></span><span style="font-size:13px;font-weight:500;color:var(--color-text-primary)">Buffer</span><span class="flow-arrow">→</span><span style="font-size:12px;color:var(--color-text-secondary)">event pushed to in-memory array — NO network request yet</span></div>
+    <div class="flow-step"><span class="flow-dot" style="background:#BA7517"></span><span style="font-size:13px;font-weight:500;color:var(--color-text-primary)">Flush trigger</span><span class="flow-arrow">→</span><span style="font-size:12px;color:var(--color-text-secondary)">≥10 events OR 3s timer OR visibilitychange (pagehide)</span></div>
+    <div class="flow-step"><span class="flow-dot" style="background:#BA7517"></span><span style="font-size:13px;font-weight:500;color:var(--color-text-primary)">Send</span><span class="flow-arrow">→</span><span style="font-size:12px;color:var(--color-text-secondary)">navigator.sendBeacon() on unload · fetch() otherwise · POST /api/events/batch</span></div>
+    <div class="flow-step"><span class="flow-dot" style="background:#534AB7"></span><span style="font-size:13px;font-weight:500;color:var(--color-text-primary)">API receives</span><span class="flow-arrow">→</span><span style="font-size:12px;color:var(--color-text-secondary)">rate limit → Zod validate each event → controller</span></div>
+    <div class="flow-step"><span class="flow-dot" style="background:#534AB7"></span><span style="font-size:13px;font-weight:500;color:var(--color-text-primary)">Service</span><span class="flow-arrow">→</span><span style="font-size:12px;color:var(--color-text-secondary)">compute xPct/yPct · strip invalid events · call repository</span></div>
+    <div class="flow-step"><span class="flow-dot" style="background:#185FA5"></span><span style="font-size:13px;font-weight:500;color:var(--color-text-primary)">Repository</span><span class="flow-arrow">→</span><span style="font-size:12px;color:var(--color-text-secondary)">events.insertMany(ordered:false) + sessions.findOneAndUpdate(upsert) — atomic</span></div>
+    <div class="flow-step"><span class="flow-dot" style="background:#185FA5"></span><span style="font-size:13px;font-weight:500;color:var(--color-text-primary)">Response</span><span class="flow-arrow">→</span><span style="font-size:12px;color:var(--color-text-secondary)">202 Accepted — client doesn't wait for DB confirmation</span></div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<div class="bp-section">
+  <div class="bp-label">MongoDB schema — exact fields and indexes</div>
+  <div class="bp-row">
+    <div class="bp-col bp-card">
+      <div class="bp-title">events collection <span class="tag tag-r">append-only</span></div>
+      <div class="bp-mono" style="margin-top:8px">
+        _id: ObjectId<br>
+        sessionId: String <span style="color:#639922">// indexed</span><br>
+        eventType: 'page_view'|'click'<br>
+        pageUrl: String <span style="color:#639922">// indexed</span><br>
+        timestamp: Date<br>
+        x: Number <span style="color:#888">// raw px</span><br>
+        y: Number <span style="color:#888">// raw px</span><br>
+        xPct: Number <span style="color:#639922">// 0-100</span><br>
+        yPct: Number <span style="color:#639922">// 0-100</span><br>
+        viewportWidth: Number<br>
+        viewportHeight: Number<br>
+        referrer: String<br>
+        userAgent: String<br>
+        createdAt: Date <span style="color:#A32D2D">// TTL 90d</span>
+      </div>
+      <div style="margin-top:10px">
+        <div class="tag tag-b">{ sessionId:1, timestamp:1 }</div>
+        <div class="tag tag-b">{ pageUrl:1, eventType:1 }</div>
+        <div class="tag tag-b">{ createdAt:1 } TTL</div>
+      </div>
+    </div>
+    <div class="bp-col bp-card">
+      <div class="bp-title">sessions collection <span class="tag tag-g">materialized</span></div>
+      <div class="bp-mono" style="margin-top:8px">
+        sessionId: String <span style="color:#639922">// _id</span><br>
+        startedAt: Date <span style="color:#888">// $setOnInsert</span><br>
+        lastSeen: Date <span style="color:#888">// $max</span><br>
+        totalEvents: Number <span style="color:#888">// $inc</span><br>
+        pagesVisited: [String] <span style="color:#888">// $addToSet</span><br>
+        userAgent: String <span style="color:#888">// $setOnInsert</span><br>
+        <br>
+        <span style="color:#639922">// upsert pattern:</span><br>
+        $setOnInsert: startedAt, userAgent<br>
+        $inc: totalEvents<br>
+        $max: lastSeen<br>
+        $addToSet: pagesVisited
+      </div>
+      <div style="margin-top:10px">
+        <div class="tag tag-b">{ lastSeen:-1 }</div>
+        <div class="tag tag-b">{ totalEvents:-1 }</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<div class="bp-section">
+  <div class="bp-label">API contract</div>
+  <div class="bp-card-white">
+    <div class="decision-row">
+      <div class="decision-q"><span class="tag tag-a">POST</span> /api/events/batch</div>
+      <div class="decision-a">Body: <code style="font-size:11px">{ events: EventPayload[] }</code> · Returns 202 · insertMany ordered:false · validate each event with Zod</div>
+    </div>
+    <div class="decision-row">
+      <div class="decision-q"><span class="tag tag-t">GET</span> /api/sessions</div>
+      <div class="decision-a">Query: page, limit, sortBy, order · Returns paginated session list with totalEvents, lastSeen, pagesVisited</div>
+    </div>
+    <div class="decision-row">
+      <div class="decision-q"><span class="tag tag-t">GET</span> /api/sessions/:id</div>
+      <div class="decision-a">Returns ordered event timeline for session · sorted by timestamp asc · includes eventType, pageUrl, x, y, timestamp</div>
+    </div>
+    <div class="decision-row">
+      <div class="decision-q"><span class="tag tag-t">GET</span> /api/heatmap</div>
+      <div class="decision-a">Query: pageUrl (required), eventType (default: click) · Returns <code style="font-size:11px">{ points: [{xPct, yPct, viewportWidth}] }</code></div>
+    </div>
+    <div class="decision-row">
+      <div class="decision-q"><span class="tag tag-t">GET</span> /api/health</div>
+      <div class="decision-a">Returns <code style="font-size:11px">{ status: 'ok', db: 'connected', uptime }</code> · reviewers always check this</div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<div class="bp-section">
+  <div class="bp-label">Key decisions with reasoning</div>
+  <div class="bp-card-white">
+    <div class="decision-row">
+      <div class="decision-q">Raw coords + xPct/yPct?</div>
+      <div class="decision-a">Store both. xPct/yPct for rendering. Raw + viewportWidth for future device-type segmentation (mobile vs desktop heatmaps look very different).</div>
+    </div>
+    <div class="decision-row">
+      <div class="decision-q">Session in localStorage?</div>
+      <div class="decision-a">Yes. Expires after 30 min inactivity (rolling). Check <code style="font-size:11px">lastActivity</code> on every event, regenerate sessionId if stale. Matches Google Analytics behavior.</div>
+    </div>
+    <div class="decision-row">
+      <div class="decision-q">metadata: {} field?</div>
+      <div class="decision-a">No. Untyped blobs can't be indexed or queried. Add typed optional fields to Zod schema per event type instead. Escape hatch: rawMeta only if truly needed.</div>
+    </div>
+    <div class="decision-row">
+      <div class="decision-q">Sessions: separate collection?</div>
+      <div class="decision-a">Yes — materialized view via upsert. Never recompute via aggregation on every API call. Use $setOnInsert / $inc / $max / $addToSet atomically.</div>
+    </div>
+    <div class="decision-row">
+      <div class="decision-q">State management frontend?</div>
+      <div class="decision-a">TanStack Query for server state (sessions, events, heatmap). Zustand only for UI state (selected session, URL filter). No Redux — overkill here.</div>
+    </div>
+    <div class="decision-row">
+      <div class="decision-q">Logging?</div>
+      <div class="decision-a">pino (not console.log). Structured JSON logs with level, timestamp, requestId. Reviewers who open server logs will notice this immediately.</div>
+    </div>
+    <div class="decision-row">
+      <div class="decision-q">Error responses?</div>
+      <div class="decision-a">Global Express error middleware. Always returns <code style="font-size:11px">{ success: false, error: { code, message } }</code>. Never leaks stack traces to client.</div>
+    </div>
+    <div class="decision-row">
+      <div class="decision-q">TypeScript shared types?</div>
+      <div class="decision-a">packages/shared/types — used by both backend and frontend. Single source of truth. If the schema changes, TypeScript errors propagate everywhere immediately.</div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<div class="bp-section">
+  <div class="bp-label">Tech stack — final choices</div>
+  <div class="bp-row">
+    <div class="bp-col bp-card">
+      <div class="bp-title">Backend</div>
+      <div style="margin-top:8px">
+        <div class="tag tag-p">Express.js</div>
+        <div class="tag tag-p">TypeScript</div>
+        <div class="tag tag-t">Mongoose</div>
+        <div class="tag tag-t">Zod</div>
+        <div class="tag tag-a">pino</div>
+        <div class="tag tag-a">helmet</div>
+        <div class="tag tag-a">express-rate-limit</div>
+        <div class="tag tag-g">MongoDB Atlas</div>
+      </div>
+    </div>
+    <div class="bp-col bp-card">
+      <div class="bp-title">Frontend</div>
+      <div style="margin-top:8px">
+        <div class="tag tag-p">Next.js (App Router)</div>
+        <div class="tag tag-p">TypeScript</div>
+        <div class="tag tag-t">TanStack Query</div>
+        <div class="tag tag-t">Zustand</div>
+        <div class="tag tag-a">Tailwind CSS</div>
+        <div class="tag tag-a">TanStack Table</div>
+        <div class="tag tag-g">HTML Canvas (heatmap)</div>
+        <div class="tag tag-b">Axios</div>
+      </div>
+    </div>
+    <div class="bp-col bp-card">
+      <div class="bp-title">Infrastructure</div>
+      <div style="margin-top:8px">
+        <div class="tag tag-b">Docker Compose</div>
+        <div class="tag tag-b">GitHub Actions CI</div>
+        <div class="tag tag-g">Railway / Render deploy</div>
+        <div class="tag tag-a">pnpm workspaces</div>
+        <div class="tag tag-r">ESLint + Prettier</div>
+        <div class="tag tag-r">Husky pre-commit</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<div class="bp-section">
+  <div class="bp-label">README must include</div>
+  <div class="bp-card-white">
+    <div class="decision-row"><div class="decision-q">One-command setup</div><div class="decision-a"><code style="font-size:11px">docker compose up</code> — starts mongo + backend + frontend. No local setup steps.</div></div>
+    <div class="decision-row"><div class="decision-q">Architecture decisions log</div><div class="decision-a">3-5 bullet ADRs — why you chose certain patterns. This is what gets internships: showing you made conscious choices.</div></div>
+    <div class="decision-row"><div class="decision-q">API docs</div><div class="decision-a">Table of all endpoints with sample request/response JSON. Reviewer will call these manually.</div></div>
+    <div class="decision-row"><div class="decision-q">Env variables</div><div class="decision-a">Copy of .env.example with every variable documented. Never hardcode anything.</div></div>
+  </div>
+</div>

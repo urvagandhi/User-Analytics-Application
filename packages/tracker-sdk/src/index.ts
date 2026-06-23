@@ -1,5 +1,5 @@
 import { pushEvent, getAndClearEvents } from './buffer.js';
-import { createPageViewEvent, createClickEvent, createRageClickEvent, createDeadClickEvent, isDeadClickCandidate } from './events.js';
+import { createPageViewEvent, createClickEvent, createRageClickEvent, createDeadClickEvent, isDeadClickCandidate, createScrollEvent } from './events.js';
 import { flushEvents } from './flush.js';
 import { resetSession } from './session.js';
 import type { TrackerConfig } from './config.js';
@@ -28,6 +28,92 @@ interface PendingClick {
   timerId: any;
 }
 let pendingDeadClicks: PendingClick[] = [];
+
+// Scroll depth tracking state
+let lastTrackedPageUrl = typeof window !== 'undefined' ? getPageUrl() : '';
+let emittedMilestones = new Set<0 | 25 | 50 | 75 | 100>();
+let isScrollHandling = false;
+
+function handleScroll(): void {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return;
+
+  const currentPageUrl = getPageUrl();
+  if (currentPageUrl !== lastTrackedPageUrl) {
+    lastTrackedPageUrl = currentPageUrl;
+    emittedMilestones.clear();
+  }
+
+  // Clear pending dead clicks on scroll (indicates user is successfully interacting/reading)
+  if (pendingDeadClicks.length > 0) {
+    pendingDeadClicks.forEach((pc) => clearTimeout(pc.timerId));
+    pendingDeadClicks = [];
+  }
+
+  const docElement = document.documentElement;
+  const body = document.body;
+
+  const docHeight = Math.max(
+    docElement.scrollHeight,
+    body.scrollHeight,
+    docElement.offsetHeight,
+    body.offsetHeight,
+    docElement.clientHeight
+  );
+  
+  const winHeight = window.innerHeight || docElement.clientHeight || body.clientHeight;
+  const scrollTop = window.scrollY || window.pageYOffset || docElement.scrollTop || body.scrollTop || 0;
+
+  const scrollable = docHeight - winHeight;
+  let pct = 0;
+
+  if (scrollable <= 0) {
+    // Page is fully visible without scrolling
+    pct = 100;
+  } else {
+    // If user is within 5px of the bottom, consider it 100% to account for subpixel rendering
+    if (Math.ceil(scrollTop + winHeight) >= docHeight - 5) {
+      pct = 100;
+    } else {
+      pct = (scrollTop / scrollable) * 100;
+    }
+  }
+
+  const milestones: (0 | 25 | 50 | 75 | 100)[] = [0, 25, 50, 75, 100];
+  for (const milestone of milestones) {
+    if (pct >= milestone && !emittedMilestones.has(milestone)) {
+      emittedMilestones.add(milestone);
+      try {
+        const scrollEvent = createScrollEvent(milestone, winHeight, docHeight);
+        pushEvent(scrollEvent, () => {
+          flush().catch(() => {});
+        });
+      } catch (err) {
+        console.error('CausalFunnel Tracker: Error tracking Scroll:', err);
+      }
+    }
+  }
+}
+
+export function setupScrollTracking(): void {
+  if (typeof window === 'undefined') return;
+
+  // Track initial scroll position on page load
+  handleScroll();
+
+  window.addEventListener(
+    'scroll',
+    () => {
+      if (!isScrollHandling) {
+        isScrollHandling = true;
+        requestAnimationFrame(() => {
+          handleScroll();
+          isScrollHandling = false;
+        });
+      }
+    },
+    { passive: true }
+  );
+}
 
 /**
  * Flushes all currently buffered tracking events.
@@ -65,12 +151,21 @@ export function trackPageView(): void {
   pendingDeadClicks.forEach((pc) => clearTimeout(pc.timerId));
   pendingDeadClicks = [];
 
+  // Reset scroll depth tracking state on page view
+  emittedMilestones.clear();
+  lastTrackedPageUrl = getPageUrl();
+
   try {
     const event = createPageViewEvent();
     pushEvent(event, () => {
       // Trigger instant flush when batch limit is reached
       flush().catch(() => {});
     });
+
+    // Check initial scroll on new page view
+    setTimeout(() => {
+      handleScroll();
+    }, 100);
   } catch (error) {
     console.error('CausalFunnel Tracker: Error tracking PageView:', error);
   }
@@ -140,32 +235,41 @@ export function trackClick(xOrEvent?: number | MouseEvent, y?: number): void {
       }
 
       // 2. Dead Click Detection
-      if (isDeadClickCandidate(clickElement)) {
-        const pendingId = Math.random().toString();
-        const timerId = setTimeout(() => {
-          const idx = pendingDeadClicks.findIndex((pc) => pc.id === pendingId);
-          if (idx !== -1) {
-            const deadClick = pendingDeadClicks[idx];
-            pendingDeadClicks.splice(idx, 1);
-            try {
-              const deadEvent = createDeadClickEvent(deadClick.clientX, deadClick.clientY, deadClick.element);
-              pushEvent(deadEvent, () => {
-                flush().catch(() => {});
-              });
-            } catch (err) {
-              console.error('CausalFunnel Tracker: Error tracking DeadClick:', err);
+      if (!isDeadClickCandidate(clickElement)) {
+        // User successfully clicked an interactive element -> clear pending dead clicks
+        pendingDeadClicks.forEach((pc) => clearTimeout(pc.timerId));
+        pendingDeadClicks = [];
+      } else {
+        // Deduplicate: do not queue multiple dead clicks for the same element within the 2s window
+        const alreadyPending = pendingDeadClicks.some((pc) => pc.element === clickElement);
+        
+        if (!alreadyPending) {
+          const pendingId = Math.random().toString();
+          const timerId = setTimeout(() => {
+            const idx = pendingDeadClicks.findIndex((pc) => pc.id === pendingId);
+            if (idx !== -1) {
+              const deadClick = pendingDeadClicks[idx];
+              pendingDeadClicks.splice(idx, 1);
+              try {
+                const deadEvent = createDeadClickEvent(deadClick.clientX, deadClick.clientY, deadClick.element);
+                pushEvent(deadEvent, () => {
+                  flush().catch(() => {});
+                });
+              } catch (err) {
+                console.error('CausalFunnel Tracker: Error tracking DeadClick:', err);
+              }
             }
-          }
-        }, 2000);
+          }, 2000);
 
-        pendingDeadClicks.push({
-          id: pendingId,
-          timestamp: now,
-          clientX,
-          clientY,
-          element: clickElement,
-          timerId,
-        });
+          pendingDeadClicks.push({
+            id: pendingId,
+            timestamp: now,
+            clientX,
+            clientY,
+            element: clickElement,
+            timerId,
+          });
+        }
       }
 
       // Prune old clicks from buffer to keep memory clean
@@ -231,6 +335,9 @@ export function initializeTracker(userConfig: TrackerConfig): void {
       trackClick(e);
     });
   }
+
+  // Setup auto scroll tracking
+  setupScrollTracking();
 }
 
 // Re-export resetSession to allow explicit session resets

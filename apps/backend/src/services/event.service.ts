@@ -1,6 +1,9 @@
 import { TrackingEventSchema, EventType } from '@causal-funnel/shared';
 import { eventRepository, EventRepository } from '../repositories/event.repository.js';
 import { sessionRepository, SessionRepository } from '../repositories/session.repository.js';
+import { EventEmitter } from 'events';
+
+export const liveEventEmitter = new EventEmitter();
 
 export class EventService {
   constructor(
@@ -76,6 +79,17 @@ export class EventService {
           elementText: event.elementText,
           tagName: event.tagName,
         });
+      } else if (event.type === EventType.SCROLL) {
+        validEvents.push({
+          sessionId: event.sessionId,
+          eventType: event.type,
+          pageUrl: event.pageUrl,
+          timestamp: event.timestamp.getTime(),
+          scrollDepth: event.scrollDepth,
+          viewportHeight: event.viewportHeight,
+          documentHeight: event.documentHeight,
+          userAgent: event.userAgent,
+        });
       } else {
         // Page view event mapping
         validEvents.push({
@@ -94,6 +108,9 @@ export class EventService {
 
       // Perform atomic pre-aggregation on the session read-model
       await this.sessionRepo.upsertSessionsFromEvents(validEvents);
+
+      // Broadcast events to active SSE clients
+      liveEventEmitter.emit('new_events', validEvents);
     }
 
     return {

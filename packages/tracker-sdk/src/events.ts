@@ -1,4 +1,4 @@
-import type { PageViewEvent, ClickEvent, RageClickEvent, DeadClickEvent } from '@causal-funnel/shared';
+import type { PageViewEvent, ClickEvent, RageClickEvent, DeadClickEvent, ScrollEvent } from '@causal-funnel/shared';
 import { getSessionId } from './session.js';
 import { getPageUrl } from './config.js';
 
@@ -7,6 +7,7 @@ export enum EventType {
   CLICK = 'click',
   RAGE_CLICK = 'rage_click',
   DEAD_CLICK = 'dead_click',
+  SCROLL = 'scroll',
 }
 
 export function getElementSelector(el: HTMLElement): string {
@@ -197,4 +198,28 @@ export function isDeadClickCandidate(el: HTMLElement): boolean {
   }
   
   return true;
+}
+
+/**
+ * Creates a strongly typed ScrollEvent.
+ */
+export function createScrollEvent(
+  scrollDepth: 0 | 25 | 50 | 75 | 100,
+  viewportHeight: number,
+  documentHeight: number
+): ScrollEvent {
+  if (typeof window === 'undefined') {
+    throw new Error('CausalFunnel Tracker: DOM environment is required to track Scroll.');
+  }
+
+  return {
+    type: EventType.SCROLL,
+    sessionId: getSessionId(),
+    timestamp: new Date(),
+    pageUrl: getPageUrl(),
+    userAgent: navigator.userAgent,
+    scrollDepth,
+    viewportHeight,
+    documentHeight,
+  };
 }

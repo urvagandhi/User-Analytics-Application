@@ -1,0 +1,78 @@
+# Node modules
+node_modules/
+**/node_modules/
+
+# pnpm log files
+pnpm-debug.log*
+
+# npm/yarn logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output directories
+dist/
+build/
+*.tsbuildinfo
+
+# Next.js build artifacts
+.next/
+out/
+
+# Vite/other bundlers
+.cache/
+.tmp/
+.tmp/**
+
+# Coverage reports
+coverage/
+
+# Generated source maps
+*.js.map
+
+# Environment variable files
+.env
+.env.*
+.env.local
+.env.development
+.env.production
+
+# Log files
+logs
+*.log
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# IDE / editor settings
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# TurboRepo cache and state
+.turbo/
+.turbo/**
+.turbo-cache/
+.turbo-cache/**
+
+# Lockfiles (optional if you keep them versioned, but ignore generated ones)
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Misc temporary files
+*.tgz
+*.bak
+*.tmp
+
+# Monorepo specific build artifacts
+apps/backend/dist/
+apps/frontend/.next/
+apps/frontend/.vercel/
+packages/**/dist/
+packages/**/.turbo/

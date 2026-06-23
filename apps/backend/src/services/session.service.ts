@@ -36,6 +36,60 @@ export class SessionService {
       events,
     };
   }
+
+  /**
+   * Retrieves funnel conversion rates for the given steps by verifying strictly chronological 
+   * event order using an O(n) sweep over sorted page view events.
+   */
+  async getFunnel(steps: string[]) {
+    // 1. Fetch chronological events matching any funnel step
+    const events = await this.eventRepo.getFunnelPageViews(steps);
+
+    // 2. Track maximum funnel step reached per session
+    const sessionProgress = new Map<string, number>();
+    const stepRegexes = steps.map(step => new RegExp(step + '($|\\?|/)', 'i'));
+
+    for (const event of events) {
+      if (!event.pageUrl) continue;
+      
+      const currentStep = sessionProgress.get(event.sessionId) || 0;
+      
+      // If the event matches the NEXT step in this session's journey, advance their progress
+      if (currentStep < steps.length && stepRegexes[currentStep].test(event.pageUrl)) {
+        sessionProgress.set(event.sessionId, currentStep + 1);
+      }
+    }
+
+    // 3. Aggregate survival counts
+    const stepCounts = new Array(steps.length).fill(0);
+    for (const progress of sessionProgress.values()) {
+      for (let i = 0; i < progress; i++) {
+        stepCounts[i]++;
+      }
+    }
+
+    // 4. Calculate metrics
+    let previousCount = stepCounts[0] || 0;
+    
+    return steps.map((step, index) => {
+      const count = stepCounts[index] || 0;
+      const dropoff = index === 0 || previousCount === 0 
+        ? 0 
+        : Math.round(((previousCount - count) / previousCount) * 100);
+      
+      const survivalRate = index === 0 || previousCount === 0
+        ? 100
+        : Math.round((count / previousCount) * 100);
+
+      previousCount = count;
+      return {
+        step,
+        count,
+        dropoff,
+        survivalRate,
+      };
+    });
+  }
 }
 
 export const sessionService = new SessionService();

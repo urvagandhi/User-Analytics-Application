@@ -61,4 +61,20 @@ export class FrustrationController {
       next(error);
     }
   }
+
+  /**
+   * GET /api/frustration/heatmap
+   */
+  static async getHeatmap(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { pageUrl } = req.query as any;
+      const data = await frustrationService.getHeatmapPoints(pageUrl);
+      res.status(200).json({
+        success: true,
+        data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }

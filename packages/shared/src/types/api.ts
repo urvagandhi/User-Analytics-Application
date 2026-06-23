@@ -49,3 +49,40 @@ export const AnalyticsSummarySchema = z.object({
 });
 
 export type AnalyticsSummary = z.infer<typeof AnalyticsSummarySchema>;
+
+/**
+ * Scroll Analytics response schema and type.
+ */
+export const ScrollAnalyticsResponseSchema = z.object({
+  totalSessions: z.number().int().nonnegative(),
+  averageDepth: z.number().nonnegative(),
+  deepestScrollDepth: z.number().nonnegative().optional(),
+  largestDropOff: z.string().optional(),
+  depthDistribution: z.object({
+    0: z.number().nonnegative(),
+    25: z.number().nonnegative(),
+    50: z.number().nonnegative(),
+    75: z.number().nonnegative(),
+    100: z.number().nonnegative(),
+  }),
+  dropoffSteps: z.lazy(() => ScrollDropoffResponseSchema).optional(),
+});
+
+export type ScrollAnalyticsResponse = z.infer<typeof ScrollAnalyticsResponseSchema>;
+
+/**
+ * Scroll drop-off response schema and type.
+ */
+export const ScrollDropoffResponseSchema = z.array(
+  z.object({
+    depth: z.union([
+      z.literal(25),
+      z.literal(50),
+      z.literal(75),
+      z.literal(100),
+    ]),
+    reachedBy: z.number().nonnegative(),
+  })
+);
+
+export type ScrollDropoffResponse = z.infer<typeof ScrollDropoffResponseSchema>;

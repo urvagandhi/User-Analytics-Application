@@ -83,8 +83,10 @@ app.get('/api/health', (req, res) => {
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Route Bindings
+app.get('/api/live', EventController.getLiveFeed);
 app.post('/api/events/batch', validate(TrackEventBatchSchema), EventController.postEventsBatch);
 app.get('/api/sessions', validate(ListSessionsSchema), SessionController.getSessions);
+app.get('/api/funnel', SessionController.getFunnel);
 app.get(
   '/api/sessions/:sessionId/journey',
   validate(GetSessionParamsSchema),
@@ -98,8 +100,16 @@ app.get('/api/frustration/summary', FrustrationController.getSummary);
 app.get('/api/frustration/elements', FrustrationController.getElements);
 app.get('/api/frustration/pages', FrustrationController.getPages);
 app.get('/api/frustration/timeline', FrustrationController.getTimeline);
+app.get(
+  '/api/frustration/heatmap',
+  validate(GetHeatmapSchema),
+  FrustrationController.getHeatmap
+);
 
 // Global Error Handler
+import debugRoutes from './routes/debug.routes.js';
+app.use('/api/reset', debugRoutes);
+
 app.use(errorHandler);
 
 export default app;

@@ -26,5 +26,19 @@ export class EventRepository {
       .limit(3000)
       .exec();
   }
+
+  /**
+   * Retrieves all page view events that match funnel steps, sorted chronologically.
+   * Used for sequence-verified funnel analysis in the service layer.
+   */
+  async getFunnelPageViews(steps: string[]): Promise<IEventDocument[]> {
+    const orConditions = steps.map(s => ({
+      pageUrl: { $regex: new RegExp(s + '($|\\?|/)', 'i') }
+    }));
+    return EventModel.find({ 
+      eventType: 'page_view', 
+      $or: orConditions
+    }).sort({ timestamp: 1 }).lean().exec() as unknown as IEventDocument[];
+  }
 }
 export const eventRepository = new EventRepository();

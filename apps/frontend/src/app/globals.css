@@ -1,0 +1,133 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-canvas: #eeefe9;
+    --color-surface-card: #ffffff;
+    --color-surface-soft: #e5e7e0;
+    --color-surface-dark: #23251d;
+    --color-hairline: #bfc1b7;
+    --color-hairline-soft: #dcdfd2;
+    --color-ink: #23251d;
+    --color-body: #4d4f46;
+    --color-charcoal: #33342d;
+    --color-mute: #6c6e63;
+    --color-ash: #9b9c92;
+    --color-stone: #b6b7af;
+    
+    /* PostHog brand colors */
+    --color-primary: #f7a501;
+    --color-primary-pressed: #dd9001;
+    --color-primary-active: #b17816;
+    --color-on-primary: #23251d;
+    --color-on-dark: #ffffff;
+    --color-link-blue: #1d4ed8;
+    --color-link-teal: #1078a3;
+    
+    /* Semantic soft/hard tones */
+    --color-accent-blue: #2c84e0;
+    --color-accent-blue-soft: #dceaf6;
+    --color-accent-red: #cd4239;
+    --color-accent-red-soft: #f7d6d3;
+    --color-accent-green: #2c8c66;
+    --color-accent-green-soft: #d9eddf;
+    --color-accent-purple: #7c44a6;
+    --color-accent-purple-soft: #e7d8ee;
+
+    --rounded-none: 0px;
+    --rounded-xs: 2px;
+    --rounded-sm: 4px;
+    --rounded-md: 6px;
+    --rounded-lg: 8px;
+    --rounded-full: 9999px;
+
+    --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Source Code Pro', ui-monospace, monospace;
+  }
+
+  .dark {
+    --color-canvas: #12130f; /* Warm dark charcoal-black */
+    --color-surface-card: #181912; /* Deep olive-black */
+    --color-surface-soft: #23251d; /* Deep olive-charcoal (same as light surface-dark) */
+    --color-surface-dark: #0f100c; /* Extra deep dark */
+    --color-hairline: #383a30; /* Dark olive-gray border */
+    --color-hairline-soft: #2c2e24; /* Muted dark row separator */
+    --color-ink: #eeefe9; /* Cream white for high contrast text */
+    --color-body: #bfc1b7; /* Warm light gray for normal text */
+    --color-charcoal: #e5e7e0;
+    --color-mute: #8b8d82;
+    --color-ash: #5c5e54;
+    --color-stone: #46483d;
+
+    /* Semantic soft/hard tones in dark mode */
+    --color-accent-blue-soft: #1c2738;
+    --color-accent-red-soft: #2d1c1a;
+    --color-accent-green-soft: #16281e;
+    --color-accent-purple-soft: #261730;
+  }
+
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-body);
+    font-family: var(--font-sans);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+}
+
+/* Base custom styles mimicking PostHog sketchbook aesthetic */
+.sketch-border {
+  border: 1px solid var(--color-hairline);
+}
+
+.sketch-card {
+  background-color: var(--color-surface-card);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--rounded-md);
+  transition: all 0.2s ease-in-out;
+}
+
+.sketch-card-hover:hover {
+  border-color: var(--color-primary);
+  transform: translateY(-1px);
+}
+
+/* Custom scrollbars for a premium feel */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-canvas);
+  border-left: 1px solid var(--color-hairline-soft);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-hairline);
+  border-radius: var(--rounded-full);
+  border: 2px solid var(--color-canvas);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-body);
+}
+
+/* Animation utilities */
+@keyframes shiver {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  20% { transform: translate(-1px, 1px) rotate(-0.5deg); }
+  40% { transform: translate(1px, -1px) rotate(0.5deg); }
+  60% { transform: translate(-1px, -1px) rotate(-0.5deg); }
+  80% { transform: translate(1px, 1px) rotate(0.5deg); }
+}
+
+.shiver-hover:hover {
+  animation: shiver 0.3s ease-in-out infinite;
+}

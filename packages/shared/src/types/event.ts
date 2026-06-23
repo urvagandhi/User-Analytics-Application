@@ -3,6 +3,9 @@ import { z } from 'zod';
 export enum EventType {
   PAGE_VIEW = 'page_view',
   CLICK = 'click',
+  RAGE_CLICK = 'rage_click',
+  DEAD_CLICK = 'dead_click',
+  SCROLL = 'scroll',
 }
 
 /**
@@ -43,11 +46,65 @@ export const ClickEventSchema = BaseEventSchema.extend({
 export type ClickEvent = z.infer<typeof ClickEventSchema>;
 
 /**
+ * Rage Click Event Schema and Type.
+ */
+export const RageClickEventSchema = BaseEventSchema.extend({
+  type: z.literal(EventType.RAGE_CLICK),
+  x: z.number().nonnegative('X coordinate must be positive'),
+  y: z.number().nonnegative('Y coordinate must be positive'),
+  viewportWidth: z.number().positive('Viewport width must be greater than zero'),
+  viewportHeight: z.number().positive('Viewport height must be greater than zero'),
+  xPct: z.number().min(0).max(100, 'X percentage must be between 0 and 100'),
+  yPct: z.number().min(0).max(100, 'Y percentage must be between 0 and 100'),
+  elementSelector: z.string(),
+  elementText: z.string(),
+  tagName: z.string(),
+});
+
+export type RageClickEvent = z.infer<typeof RageClickEventSchema>;
+
+/**
+ * Dead Click Event Schema and Type.
+ */
+export const DeadClickEventSchema = BaseEventSchema.extend({
+  type: z.literal(EventType.DEAD_CLICK),
+  x: z.number().nonnegative('X coordinate must be positive'),
+  y: z.number().nonnegative('Y coordinate must be positive'),
+  elementSelector: z.string(),
+  elementText: z.string(),
+  tagName: z.string(),
+});
+
+export type DeadClickEvent = z.infer<typeof DeadClickEventSchema>;
+
+/**
+ * Scroll Event Schema and Type.
+ */
+export const ScrollEventSchema = BaseEventSchema.omit({ timestamp: true }).extend({
+  type: z.literal(EventType.SCROLL),
+  timestamp: z.coerce.date(),
+  scrollDepth: z.union([
+    z.literal(0),
+    z.literal(25),
+    z.literal(50),
+    z.literal(75),
+    z.literal(100),
+  ]),
+  viewportHeight: z.number().positive('Viewport height must be positive'),
+  documentHeight: z.number().positive('Document height must be positive'),
+});
+
+export type ScrollEvent = z.infer<typeof ScrollEventSchema>;
+
+/**
  * Discriminated Union representing any tracking event.
  */
 export const TrackingEventSchema = z.discriminatedUnion('type', [
   PageViewEventSchema,
   ClickEventSchema,
+  RageClickEventSchema,
+  DeadClickEventSchema,
+  ScrollEventSchema,
 ]);
 
 export type TrackingEvent = z.infer<typeof TrackingEventSchema>;
