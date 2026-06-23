@@ -10,8 +10,7 @@ import {
   createColumnHelper,
 } from '@tanstack/react-table';
 import { SessionData } from '../api/session.api';
-import { ArrowUpDown, Monitor, Clock, FileText, ArrowRight, ArrowUp, ArrowDown } from 'lucide-react';
-import HedgehogMascot from './HedgehogMascot';
+import { ArrowUpDown, Monitor, Clock, FileText, ArrowRight, ArrowUp, ArrowDown, Inbox } from 'lucide-react';
 
 interface SessionTableProps {
   data: SessionData[];
@@ -147,7 +146,7 @@ export default function SessionTable({ data, onSelectSession, isLoading }: Sessi
   if (data.length === 0) {
     return (
       <div className="w-full bg-surface-card border border-hairline rounded-md p-12 text-center flex flex-col items-center justify-center">
-        <HedgehogMascot type="empty" size={80} className="mb-4" />
+        <Inbox size={64} className="mb-4 text-mute opacity-50" />
         <h3 className="text-sm font-bold text-ink uppercase tracking-wider">No Active Sessions</h3>
         <p className="text-mute text-xs mt-1 max-w-sm leading-relaxed">
           Make sure your client app is running the tracker SDK and sending interaction telemetry.

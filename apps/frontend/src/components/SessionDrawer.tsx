@@ -18,9 +18,10 @@ import {
   Zap,
   Award,
   Frown,
-  Activity
+  Activity,
+  AlertTriangle,
+  Search
 } from 'lucide-react';
-import HedgehogMascot from './HedgehogMascot';
 
 interface SessionDrawerProps {
   sessionId: string | null;
@@ -361,35 +362,35 @@ function SessionStats({ events, pagesVisited }: { events: any[]; pagesVisited: s
             {counts.page_view > 0 && (
               <div
                 style={{ width: `${(counts.page_view / totalEvents) * 100}%` }}
-                className="bg-accent-blue/80 hover:bg-accent-blue transition-colors"
+                className="bg-accent-blue opacity-80 hover:opacity-100 transition-colors"
                 title={`Page Views: ${counts.page_view}`}
               />
             )}
             {counts.click > 0 && (
               <div
                 style={{ width: `${(counts.click / totalEvents) * 100}%` }}
-                className="bg-primary/80 hover:bg-primary transition-colors"
+                className="bg-primary opacity-80 hover:opacity-100 transition-colors"
                 title={`Clicks: ${counts.click}`}
               />
             )}
             {counts.rage_click > 0 && (
               <div
                 style={{ width: `${(counts.rage_click / totalEvents) * 100}%` }}
-                className="bg-accent-red/80 hover:bg-accent-red transition-colors"
+                className="bg-accent-red opacity-80 hover:opacity-100 transition-colors"
                 title={`Rage Clicks: ${counts.rage_click}`}
               />
             )}
             {counts.dead_click > 0 && (
               <div
                 style={{ width: `${(counts.dead_click / totalEvents) * 100}%` }}
-                className="bg-accent-purple/80 hover:bg-accent-purple transition-colors"
+                className="bg-accent-purple opacity-80 hover:opacity-100 transition-colors"
                 title={`Dead Clicks: ${counts.dead_click}`}
               />
             )}
             {counts.scroll > 0 && (
               <div
                 style={{ width: `${(counts.scroll / totalEvents) * 100}%` }}
-                className="bg-accent-green/80 hover:bg-accent-green transition-colors"
+                className="bg-accent-green opacity-80 hover:opacity-100 transition-colors"
                 title={`Scrolls: ${counts.scroll}`}
               />
             )}
@@ -636,7 +637,7 @@ export default function SessionDrawer({ sessionId, onClose }: SessionDrawerProps
         <div className="flex-1 overflow-y-auto p-5 space-y-6">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-32 gap-4">
-              <HedgehogMascot type="scientist" size={90} className="animate-bounce" />
+              <Search size={80} className="animate-pulse text-mute opacity-50" />
               <div className="flex items-center gap-2">
                 <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                 <span className="text-xs text-mute font-mono">Parsing raw event telemetry...</span>
@@ -644,7 +645,7 @@ export default function SessionDrawer({ sessionId, onClose }: SessionDrawerProps
             </div>
           ) : error ? (
             <div className="p-6 border border-accent-red rounded-md bg-accent-red-soft/10 text-center flex flex-col items-center justify-center">
-              <HedgehogMascot type="error" size={72} className="mb-3" />
+              <AlertTriangle size={64} className="mb-3 text-accent-red opacity-80" />
               <h4 className="text-sm font-bold text-accent-red uppercase tracking-wider">Failed to compile journey</h4>
               <p className="text-xs text-body mt-1.5 leading-relaxed">{error.message}</p>
               <button

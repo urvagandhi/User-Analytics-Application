@@ -14,8 +14,7 @@ import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import LiveFeed from '../components/LiveFeed';
 import FunnelView from '../components/FunnelView';
-import HedgehogMascot from '../components/HedgehogMascot';
-import { ChevronLeft, ChevronRight, Filter, RefreshCw, Layers, Award, Target } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Filter, RefreshCw, Layers, Award, Target, AlertTriangle } from 'lucide-react';
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<'sessions' | 'heatmap' | 'frustration' | 'live' | 'funnel'>('sessions');
@@ -242,7 +241,7 @@ export default function Dashboard() {
               {/* Sessions Table Section */}
               {sessionsError ? (
                 <div className="p-8 border border-accent-red rounded-md bg-accent-red-soft/15 text-center flex flex-col items-center justify-center">
-                  <HedgehogMascot type="error" size={72} className="mb-3" />
+                  <AlertTriangle size={64} className="mb-4 text-accent-red opacity-80" />
                   <h4 className="text-sm font-bold text-accent-red uppercase tracking-wider">Failed to Ingest Sessions</h4>
                   <p className="text-xs text-body mt-1 max-w-md leading-relaxed">{sessionsError.message}</p>
                   <button
@@ -496,12 +495,10 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* Live Feed Tab */}
-          {activeTab === 'live' && (
-            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-              <LiveFeed />
-            </div>
-          )}
+          {/* Live Feed Tab - Kept mounted in background to maintain SSE connection */}
+          <div className={activeTab === 'live' ? "animate-in fade-in slide-in-from-bottom-2 duration-300" : "hidden"}>
+            <LiveFeed />
+          </div>
 
           {/* Funnel Analysis Tab */}
           {activeTab === 'funnel' && (

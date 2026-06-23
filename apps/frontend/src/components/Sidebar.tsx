@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Users, LayoutGrid, Sun, Moon, Terminal, BookOpen, X, Frown, Target } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
-import HedgehogMascot from './HedgehogMascot';
+import BrandLogo from './BrandLogo';
 
 interface SidebarProps {
   activeTab: 'sessions' | 'heatmap' | 'frustration' | 'live' | 'funnel';
@@ -49,7 +49,7 @@ export default function Sidebar({ activeTab, setActiveTab, isOpen, onClose, them
         {/* Brand Header */}
         <div className="h-14 border-b border-hairline flex items-center justify-between px-4 gap-2">
           <div className="flex items-center gap-2">
-            <HedgehogMascot type="logo" size={30} className="shiver-hover cursor-pointer" />
+            <BrandLogo size={30} className="shiver-hover cursor-pointer" />
             <div className="flex flex-col">
               <span className="font-semibold text-sm text-ink leading-tight">CausalFunnel</span>
               <span className="text-[10px] text-mute uppercase font-mono tracking-widest">Analytics Console</span>
@@ -74,6 +74,7 @@ export default function Sidebar({ activeTab, setActiveTab, isOpen, onClose, them
             onClick={() => {
               if (pathname === '/') {
                 if (setActiveTab) setActiveTab('sessions');
+                window.history.pushState(null, '', '/?tab=sessions');
               } else {
                 router.push('/?tab=sessions');
               }
@@ -93,6 +94,7 @@ export default function Sidebar({ activeTab, setActiveTab, isOpen, onClose, them
             onClick={() => {
               if (pathname === '/') {
                 if (setActiveTab) setActiveTab('heatmap');
+                window.history.pushState(null, '', '/?tab=heatmap');
               } else {
                 router.push('/?tab=heatmap');
               }
@@ -112,6 +114,7 @@ export default function Sidebar({ activeTab, setActiveTab, isOpen, onClose, them
             onClick={() => {
               if (pathname === '/') {
                 if (setActiveTab) setActiveTab('funnel');
+                window.history.pushState(null, '', '/?tab=funnel');
               } else {
                 router.push('/?tab=funnel');
               }
@@ -146,6 +149,7 @@ export default function Sidebar({ activeTab, setActiveTab, isOpen, onClose, them
             onClick={() => {
               if (pathname === '/') {
                 if (setActiveTab) setActiveTab('live');
+                window.history.pushState(null, '', '/?tab=live');
               } else {
                 router.push('/?tab=live');
               }
@@ -168,11 +172,16 @@ export default function Sidebar({ activeTab, setActiveTab, isOpen, onClose, them
             <div className="text-[10px] uppercase font-bold text-mute tracking-wider px-3 mb-2">
               Resources
             </div>
-            <div className="flex items-center gap-3 px-3 py-2 text-xs text-body rounded-md opacity-60">
-              <Terminal className="h-4 w-4" />
+            <a 
+              href={process.env.NEXT_PUBLIC_API_URL ? process.env.NEXT_PUBLIC_API_URL.replace('/api', '/demo') : 'http://localhost:3001/demo'} 
+              target="_blank"  
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 px-3 py-2 text-xs text-body hover:text-ink hover:bg-surface-soft rounded-md transition-all group"
+            >
+              <Terminal className="h-4 w-4 group-hover:text-primary transition-colors" />
               <span>Live SDK Status</span>
-              <span className="h-2 w-2 rounded-full bg-accent-green animate-pulse ml-auto" />
-            </div>
+              <span className="h-2 w-2 rounded-full bg-accent-green animate-pulse ml-auto shadow-[0_0_8px_rgba(44,140,102,0.6)]" />
+            </a>
           </div>
         </nav>
 
