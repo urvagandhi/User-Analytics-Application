@@ -19,6 +19,7 @@ export interface IEventDocument extends Document {
   tagName?: string;
   scrollDepth?: number;
   documentHeight?: number;
+  urlPath?: string;
   createdAt: Date;
 }
 
@@ -92,6 +93,10 @@ const EventSchema = new Schema<IEventDocument>(
     },
     documentHeight: {
       type: Number,
+      required: false,
+    },
+    urlPath: {
+      type: String,
       required: false,
     },
     createdAt: {

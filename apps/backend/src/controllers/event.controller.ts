@@ -26,6 +26,7 @@ export class EventController {
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('X-Accel-Buffering', 'no'); // Disable Nginx buffering if any
+    res.setTimeout(0); // Prevent proxy timeouts
     res.flushHeaders();
     if (typeof (res as any).flush === 'function') {
       (res as any).flush();
@@ -40,8 +41,16 @@ export class EventController {
 
     liveEventEmitter.on('new_events', onNewEvents);
 
+    const keepAlive = setInterval(() => {
+      res.write(':keepalive\n\n');
+      if (typeof (res as any).flush === 'function') {
+        (res as any).flush();
+      }
+    }, 25000);
+
     req.on('close', () => {
       liveEventEmitter.off('new_events', onNewEvents);
+      clearInterval(keepAlive);
     });
   }
 }

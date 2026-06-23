@@ -27,8 +27,12 @@ export class EventService {
       }
 
       const event = parseResult.data;
+      
+      let parsedPath = '';
+      try { parsedPath = new URL(event.pageUrl).pathname; } catch(e){}
 
       if (event.type === EventType.CLICK) {
+
         // Enforce/calculate/clamp percentage metrics to ensure mathematical consistency
         const computedXPct = event.xPct ?? (event.x / event.viewportWidth) * 100;
         const computedYPct = event.yPct ?? (event.y / event.viewportHeight) * 100;
@@ -45,6 +49,7 @@ export class EventService {
           xPct: Math.min(100, Math.max(0, computedXPct)),
           yPct: Math.min(100, Math.max(0, computedYPct)),
           userAgent: event.userAgent,
+          urlPath: parsedPath,
         });
       } else if (event.type === EventType.RAGE_CLICK) {
         const computedXPct = event.xPct ?? (event.x / event.viewportWidth) * 100;
@@ -65,6 +70,7 @@ export class EventService {
           elementSelector: event.elementSelector,
           elementText: event.elementText,
           tagName: event.tagName,
+          urlPath: parsedPath,
         });
       } else if (event.type === EventType.DEAD_CLICK) {
         validEvents.push({
@@ -78,6 +84,7 @@ export class EventService {
           elementSelector: event.elementSelector,
           elementText: event.elementText,
           tagName: event.tagName,
+          urlPath: parsedPath,
         });
       } else if (event.type === EventType.SCROLL) {
         validEvents.push({
@@ -89,6 +96,7 @@ export class EventService {
           viewportHeight: event.viewportHeight,
           documentHeight: event.documentHeight,
           userAgent: event.userAgent,
+          urlPath: parsedPath,
         });
       } else {
         // Page view event mapping
@@ -98,6 +106,7 @@ export class EventService {
           pageUrl: event.pageUrl,
           timestamp: event.timestamp,
           userAgent: event.userAgent,
+          urlPath: parsedPath,
         });
       }
     }
