@@ -357,7 +357,10 @@ Querying raw events and using MongoDB `$group` pipelines to calculate session me
 Firing an HTTP request for every click causes mobile network congestion. The SDK holds events in memory and flushes them every 3 seconds, drastically reducing connection overhead. 
 
 ### Why raw coordinates AND percentages are stored
-Raw coordinates (`x`, `y`) are meaningless if the analyst viewing the heatmap has a different monitor resolution than the user. We calculate `xPct` and `yPct` locally in the client SDK, ensuring heatmaps render accurately across all responsive breakpoints.
+Raw coordinates (`x`, `y`) are meaningless if the analyst viewing the heatmap has a different monitor resolution or scroll position than the user. We calculate `xPct` and `yPct` locally in the client SDK relative to the *full document dimensions*, ensuring heatmaps render accurately across all responsive breakpoints and scroll depths.
+
+### Why the Tracker uses Event Capturing (Instead of Bubbling)
+To bypass `e.stopPropagation()`. Many modern web components intentionally halt event bubbling, which would render traditional window-level event listeners blind. The Tracker SDK attaches `scroll` and `click` listeners using the `{ capture: true }` phase to guarantee telemetry is recorded before any application-level code can interfere.
 
 ### Why a `@shared` types package exists
 To eliminate schema drift. The Tracker SDK, Express API, and Next.js frontend all compile against the exact same Zod schemas. If a payload structure changes, the entire monorepo fails compilation instantly, guaranteeing API contract integrity.

@@ -34,7 +34,7 @@ let lastTrackedPageUrl = typeof window !== 'undefined' ? getPageUrl() : '';
 let emittedMilestones = new Set<0 | 25 | 50 | 75 | 100>();
 let isScrollHandling = false;
 
-function handleScroll(): void {
+function handleScroll(e?: Event): void {
   if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
   const currentPageUrl = getPageUrl();
@@ -49,19 +49,29 @@ function handleScroll(): void {
     pendingDeadClicks = [];
   }
 
-  const docElement = document.documentElement;
-  const body = document.body;
+  let docHeight = 0;
+  let winHeight = 0;
+  let scrollTop = 0;
 
-  const docHeight = Math.max(
-    docElement.scrollHeight,
-    body.scrollHeight,
-    docElement.offsetHeight,
-    body.offsetHeight,
-    docElement.clientHeight
-  );
-  
-  const winHeight = window.innerHeight || docElement.clientHeight || body.clientHeight;
-  const scrollTop = window.scrollY || window.pageYOffset || docElement.scrollTop || body.scrollTop || 0;
+  if (e && e.target instanceof Element) {
+    docHeight = e.target.scrollHeight;
+    winHeight = e.target.clientHeight;
+    scrollTop = e.target.scrollTop;
+  } else {
+    const docElement = document.documentElement;
+    const body = document.body;
+
+    docHeight = Math.max(
+      docElement.scrollHeight,
+      body.scrollHeight,
+      docElement.offsetHeight,
+      body.offsetHeight,
+      docElement.clientHeight
+    );
+    
+    winHeight = window.innerHeight || docElement.clientHeight || body.clientHeight;
+    scrollTop = window.scrollY || window.pageYOffset || docElement.scrollTop || body.scrollTop || 0;
+  }
 
   const scrollable = docHeight - winHeight;
   let pct = 0;
@@ -102,16 +112,16 @@ export function setupScrollTracking(): void {
 
   window.addEventListener(
     'scroll',
-    () => {
+    (e: Event) => {
       if (!isScrollHandling) {
         isScrollHandling = true;
         requestAnimationFrame(() => {
-          handleScroll();
+          handleScroll(e);
           isScrollHandling = false;
         });
       }
     },
-    { passive: true }
+    { capture: true, passive: true }
   );
 }
 
@@ -190,8 +200,8 @@ export function trackClick(xOrEvent?: number | MouseEvent, y?: number): void {
     let clickElement: HTMLElement | null = null;
 
     if (xOrEvent instanceof MouseEvent) {
-      clientX = xOrEvent.clientX;
-      clientY = xOrEvent.clientY;
+      clientX = xOrEvent.pageX;
+      clientY = xOrEvent.pageY;
       if (xOrEvent.target instanceof HTMLElement) {
         clickElement = xOrEvent.target;
       }
@@ -333,7 +343,7 @@ export function initializeTracker(userConfig: TrackerConfig): void {
   if (config.autoTrackClicks) {
     window.addEventListener('click', (e: MouseEvent) => {
       trackClick(e);
-    });
+    }, true);
   }
 
   // Setup auto scroll tracking

@@ -81,12 +81,22 @@ export function createClickEvent(clientX: number, clientY: number): ClickEvent {
     throw new Error('CausalFunnel Tracker: DOM environment is required to track Clicks.');
   }
 
+  const documentWidth = document.documentElement.scrollWidth || window.innerWidth || 1;
+  const documentHeight = Math.max(
+    document.body.scrollHeight,
+    document.documentElement.scrollHeight,
+    document.body.offsetHeight,
+    document.documentElement.offsetHeight,
+    document.body.clientHeight,
+    document.documentElement.clientHeight
+  ) || window.innerHeight || 1;
+
   const viewportWidth = window.innerWidth || 1;
   const viewportHeight = window.innerHeight || 1;
 
-  // Clamp percentages between 0 and 100
-  const xPct = Math.min(100, Math.max(0, (clientX / viewportWidth) * 100));
-  const yPct = Math.min(100, Math.max(0, (clientY / viewportHeight) * 100));
+  // Clamp percentages between 0 and 100 relative to full document
+  const xPct = Math.min(100, Math.max(0, (clientX / documentWidth) * 100));
+  const yPct = Math.min(100, Math.max(0, (clientY / documentHeight) * 100));
 
   return {
     type: EventType.CLICK,
@@ -111,11 +121,21 @@ export function createRageClickEvent(clientX: number, clientY: number, el: HTMLE
     throw new Error('CausalFunnel Tracker: DOM environment is required to track Rage Clicks.');
   }
 
+  const documentWidth = document.documentElement.scrollWidth || window.innerWidth || 1;
+  const documentHeight = Math.max(
+    document.body.scrollHeight,
+    document.documentElement.scrollHeight,
+    document.body.offsetHeight,
+    document.documentElement.offsetHeight,
+    document.body.clientHeight,
+    document.documentElement.clientHeight
+  ) || window.innerHeight || 1;
+
   const viewportWidth = window.innerWidth || 1;
   const viewportHeight = window.innerHeight || 1;
 
-  const xPct = Math.min(100, Math.max(0, (clientX / viewportWidth) * 100));
-  const yPct = Math.min(100, Math.max(0, (clientY / viewportHeight) * 100));
+  const xPct = Math.min(100, Math.max(0, (clientX / documentWidth) * 100));
+  const yPct = Math.min(100, Math.max(0, (clientY / documentHeight) * 100));
 
   return {
     type: EventType.RAGE_CLICK,
